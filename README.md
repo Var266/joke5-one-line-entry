@@ -8,9 +8,9 @@ Entry for the [One Line, One Laugh](https://make.fun/c/u-4z4ghtbwm1fn7mibrqum4bx
 
 ## The line
 
-> I told my calendar I needed a break; it scheduled a meeting about it.
+> I asked my bank for a loan; it laughed so hard it charged me an overdraft fee.
 
-69 characters — one self-contained joke with the twist landing on the last words.
+78 characters — one self-contained joke with the twist landing on the last words.
 
 ## Run
 
