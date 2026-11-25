@@ -1,19 +1,42 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+// One Line, One Laugh — bank loan joke entry.
+// Writes one 78-character line to /output/entry.txt.
+import { promises as fsp } from "node:fs";
 
-const line =
+const JOKE_LINE =
   "I asked my bank for a loan; it laughed so hard it charged me an overdraft fee.";
+const OUTPUT_DIR = "/output";
+const OUTPUT_PATH = "/output/entry.txt";
+const CHAR_LIMIT = 140;
 
-// Gate guard: the bounty only accepts 1-140 chars of non-blank UTF-8 text.
-// Also guard byte length so a multi-byte line can never slip past the char gate.
-const text = line.trim();
-if (text.length === 0 || text.length > 140) {
-  throw new Error(`entry must be 1-140 chars, got ${text.length}`);
-}
-if (Buffer.byteLength(text, "utf8") > 140) {
-  throw new Error(
-    `entry must be <=140 bytes, got ${Buffer.byteLength(text, "utf8")}`,
-  );
+function checkedLine(raw: string): string {
+  const cleaned = raw.trim();
+  if (cleaned.length === 0) {
+    throw new Error("entry line must not be blank");
+  }
+  if (cleaned.length > CHAR_LIMIT) {
+    throw new Error(
+      `entry line is ${cleaned.length} chars, limit is ${CHAR_LIMIT}`,
+    );
+  }
+  const bytes = new TextEncoder().encode(cleaned).length;
+  if (bytes > CHAR_LIMIT) {
+    throw new Error(`entry line is ${bytes} bytes, limit is ${CHAR_LIMIT}`);
+  }
+  return cleaned;
 }
 
-mkdirSync("/output", { recursive: true });
-writeFileSync("/output/entry.txt", text, "utf8");
+async function run(): Promise<void> {
+  const entry = checkedLine(JOKE_LINE);
+  await fsp.mkdir(OUTPUT_DIR, { recursive: true });
+  await fsp.writeFile(OUTPUT_PATH, entry, { encoding: "utf8" });
+  // Round-trip check: what landed on disk must be exactly what we validated.
+  const roundTrip = await fsp.readFile(OUTPUT_PATH, "utf8");
+  if (roundTrip !== entry) {
+    throw new Error("round-trip check failed: entry.txt does not match");
+  }
+}
+
+run().catch((err: unknown) => {
+  console.error(err instanceof Error ? err.message : err);
+  process.exitCode = 1;
+});
